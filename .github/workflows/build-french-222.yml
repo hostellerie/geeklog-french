@@ -62,16 +62,14 @@ jobs:
                       'indent': indent,
                       'key': key,
                       'comma': comma,
-                      'newline': '\r\n' if line.endswith('\r\n') else '\n',
                   }
-                  # Only push arrays that open here and do not close on the same line.
                   if re.match(r'^array\s*\(\s*$', rhs.strip()):
                       stack.append(key)
               return lines, entries
 
-          en211_lines, en211 = parse('core/2.1.1/english_utf-8.php')
-          fr211_lines, fr211 = parse('core/2.1.1/french_france_utf-8.php')
-          en222_lines, en222 = parse('core/2.2.2/english_utf-8.php')
+          _, en211 = parse('core/2.1.1/english_utf-8.php')
+          _, fr211 = parse('core/2.1.1/french_france_utf-8.php')
+          _, en222 = parse('core/2.2.2/english_utf-8.php')
           fr222_lines, fr222 = parse('core/2.2.2/french_france_upstream_utf-8.php')
 
           def norm(s):
@@ -79,7 +77,6 @@ jobs:
 
           replaced = 0
           for p, e222 in en222.items():
-              # Config select labels use translated labels as PHP keys; keep 2.2.2 upstream structure there.
               if p[0] == '$LANG_configselects':
                   continue
               if p not in en211 or p not in fr211 or p not in fr222:
@@ -98,7 +95,7 @@ jobs:
 
           text = ''.join(fr222_lines)
           text = text.replace("$LANG_ISO639_1 = 'en';", "$LANG_ISO639_1 = 'fr';")
-          text = text.replace('# This is the French language file for Geeklog', '# French language file for Geeklog 2.2.2')
+          text = text.replace('# This is a french language version for Geeklog!', '# French language file for Geeklog 2.2.2')
           Path('core/2.2.2/french_france_utf-8.php').write_text(text, encoding='utf-8')
           print(f'Inherited {replaced} validated 2.1.1 translations into 2.2.2.')
           PY
