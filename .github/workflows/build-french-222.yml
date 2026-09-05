@@ -50,10 +50,15 @@ jobs:
                           stack.pop()
                       continue
 
-                  m = re.match(r'^(\s*)(.+?)\s*=>\s*(.*?)(,?)\s*$', line.rstrip('\r\n'))
+                  raw = line.rstrip('\r\n')
+                  comma = ',' if raw.rstrip().endswith(',') else ''
+                  body = raw.rstrip()
+                  if comma:
+                      body = body[:-1].rstrip()
+                  m = re.match(r'^(\s*)(.+?)\s*=>\s*(.*)$', body)
                   if not m:
                       continue
-                  indent, key, rhs, comma = m.groups()
+                  indent, key, rhs = m.groups()
                   key = key.strip()
                   pathkey = (current,) + tuple(stack) + (key,)
                   entries[pathkey] = {
