@@ -26,6 +26,7 @@ geeklog-french/
 ├── plugins/
 │   └── contributed/
 ├── CONTRIBUTING.md
+├── GLOSSARY.md
 └── README.md
 ```
 
@@ -50,6 +51,22 @@ Whenever possible, the final goal is to have each translation included directly 
 
 Plugins maintained directly by the repository owner are intentionally excluded from this directory because their translations belong with the plugin source code.
 
+## French terminology
+
+`GLOSSARY.md` defines the preferred French terminology for Geeklog translations.
+
+Important reference choices include:
+
+- `Story` → `Article`;
+- `Topic` → `Catégorie`;
+- `Block` → `Bloc`;
+- `Submission` → `Soumission`;
+- `Plugin` → `Plugin`;
+- `File Manager` → `Gestionnaire de fichiers`;
+- `Breadcrumb` → `Fil d'Ariane`.
+
+Contributors should consult the glossary before introducing a new translation for an existing Geeklog concept. When a recurring term is not yet documented, the glossary should be updated together with the translation.
+
 ## Usage
 
 For the Geeklog core, copy the appropriate French language files from the directory matching your Geeklog version into the corresponding Geeklog core language directory.
@@ -65,11 +82,19 @@ Corrections, improvements and new French translations are welcome through issues
 When proposing a change:
 
 - indicate the Geeklog or plugin version concerned;
+- follow the terminology defined in `GLOSSARY.md`;
 - keep terminology consistent across the public interface and administration area;
+- preserve placeholders, variables, HTML and technical configuration values;
 - avoid modifying functionality in translation-only contributions;
 - for third-party plugins, include the upstream repository URL when known.
 
 See `CONTRIBUTING.md` for contribution guidelines.
+
+## Automated validation
+
+Core translation files may be checked automatically for PHP syntax, structural consistency and placeholders against their English source files.
+
+These checks are intended to detect missing language entries and accidental changes to technical elements without preventing normal translation of visible labels.
 
 ## Upstream contributions
 
