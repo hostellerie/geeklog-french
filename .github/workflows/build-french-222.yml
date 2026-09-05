@@ -90,6 +90,9 @@ jobs:
                   continue
               f211 = fr211[p]
               f222 = fr222[p]
+              # Do not transplant the first line of a multiline concatenated PHP expression.
+              if f211['rhs'].rstrip().endswith('.'):
+                  continue
               idx = f222['line']
               old = fr222_lines[idx]
               newline = '\r\n' if old.endswith('\r\n') else '\n'
