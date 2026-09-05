@@ -1,0 +1,48 @@
+name: Fix last Geeklog 2.2.2 French leftovers
+
+on:
+  push:
+    paths: ['.github/workflows/final-last-french-222.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix final leftovers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('core/2.2.2/french_france_utf-8.php')
+          s=p.read_text(encoding='utf-8')
+
+          # MESSAGE[501], scoped to the MESSAGE array.
+          marker='$MESSAGE = array('
+          a=s.index(marker)
+          b=s.index('\n);',a)
+          block=s[a:b]
+          replacement="    501 => 'Un message de vérification a été envoyé à votre adresse email. Cliquez sur le lien contenu dans cet email pour confirmer votre adresse et mettre à jour votre compte. Si vous vous reconnectez avant d’avoir vérifié votre adresse, une adresse email vous sera à nouveau demandée.<br /><br />Vous avez été déconnecté afin de pouvoir terminer cette vérification.',"
+          block,n=re.subn(r'(?m)^\s*501\s*=>\s*.*?,\s*$',replacement,block,count=1)
+          if n!=1:
+              raise SystemExit('MESSAGE[501] not found')
+          s=s[:a]+block+s[b:]
+
+          s=re.sub(r"(?m)^(\s*'tfa_qrcode'\s*=>\s*)'QR Code'",r"\1'Code QR'",s,count=1)
+          s=re.sub(r"(?m)^(\s*'block_type_portal'\s*=>\s*)'Portal'",r"\1'Portail'",s,count=1)
+          s=re.sub(r"(?m)^(\s*'microsummary_short'\s*=>\s*)'Microsummary'",r"\1'Microrésumé'",s,count=1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+          php -l core/2.2.2/french_france_utf-8.php
+      - name: Commit final leftovers
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add core/2.2.2/french_france_utf-8.php
+          git commit -m 'Fix final Geeklog 2.2.2 French language leftovers'
+          git push
