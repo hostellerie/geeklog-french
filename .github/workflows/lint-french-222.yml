@@ -49,6 +49,7 @@ jobs:
           php <<'PHP'
           <?php
           define('XHTML', ' /');
+          define('VERSION', '2.2.2');
 
           function loadLanguageFile($file)
           {
@@ -61,9 +62,15 @@ jobs:
                   'backup_path' => '/tmp/backups/',
                   'path_html' => '/tmp/',
                   'path_system' => '/tmp/',
-                  'path_images' => '/tmp/'
+                  'path_images' => '/tmp/',
+                  'invalidloginattempts' => 5,
+                  'invalidloginmaxtime' => 1200,
+                  'theme_site_default' => 'modern_curve',
+                  'theme' => 'modern_curve',
+                  'min_theme_gl_version' => '2.2.2'
               );
               $_DB_mysqldump_path = '/usr/bin/mysqldump';
+              $_DB_dbms = 'mysqli';
               include $file;
               $all = get_defined_vars();
               $result = array();
@@ -160,9 +167,26 @@ jobs:
           php <<'PHP'
           <?php
           define('XHTML', ' /');
+          define('VERSION', '2.2.2');
           function loadLanguageFile($file) {
-              $_CONF = array('site_url'=>'https://example.invalid','site_admin_url'=>'https://example.invalid/admin','site_name'=>'Example','commentspeedlimit'=>45,'speedlimit'=>45,'backup_path'=>'/tmp/backups/','path_html'=>'/tmp/','path_system'=>'/tmp/','path_images'=>'/tmp/');
+              $_CONF = array(
+                  'site_url'=>'https://example.invalid',
+                  'site_admin_url'=>'https://example.invalid/admin',
+                  'site_name'=>'Example',
+                  'commentspeedlimit'=>45,
+                  'speedlimit'=>45,
+                  'backup_path'=>'/tmp/backups/',
+                  'path_html'=>'/tmp/',
+                  'path_system'=>'/tmp/',
+                  'path_images'=>'/tmp/',
+                  'invalidloginattempts'=>5,
+                  'invalidloginmaxtime'=>1200,
+                  'theme_site_default'=>'modern_curve',
+                  'theme'=>'modern_curve',
+                  'min_theme_gl_version'=>'2.2.2'
+              );
               $_DB_mysqldump_path = '/usr/bin/mysqldump';
+              $_DB_dbms = 'mysqli';
               include $file;
               $all = get_defined_vars(); $result = array();
               foreach ($all as $name=>$value) if ($name==='MESSAGE' || strpos($name,'LANG')===0) $result[$name]=$value;
