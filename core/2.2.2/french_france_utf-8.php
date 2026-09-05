@@ -534,7 +534,7 @@ $LANG08 = array(
     26 => 'Ce formulaire vous permet d\'envoyer un email à l\'utilisateur sélectionné. Tous les champs sont obligatoires.',
     27 => 'Message court',
     28 => '%s a écrit : ',
-    29 => "Bonjour. Voici les derniers articles publiés sur le site {$_CONF['site_name']} le ",
+    29 => "Voici le résumé quotidien de {$_CONF['site_name']} pour le %s. Vous trouverez ci-dessous les derniers articles publiés depuis le précédent envoi de cet email.",
     30 => ' Newsletter quotidienne du ',
     31 => 'Titre',
     32 => 'Date',
@@ -1312,7 +1312,7 @@ $LANG28 = array(
     82 => "Vous n'avez pas accédez à votre compte sur le site {$_CONF['site_name']} depuis %s. Il sera désactivé si vous ne vous connectez pas dans les prochains 30 jours.",
     83 => "Votre compte sur {$_CONF['site_name']} n'a jamais été utilisé depuis sa création et sera bientôt supprimé s'il n'est pas utilisé.",
     84 => "Votre nom de connexion est : %s pour notre site : {$_CONF['site_url']}",
-    85 => 'Si vous avez oublié votre mot de passe, utilisez le lien suivant : %s',
+    85 => 'Si vous avez oublié votre mot de passe, utilisez le lien suivant : ',
     86 => 'Inclure',
     87 => 'Rappels',
     88 => 'Groupe par défaut',
@@ -2802,9 +2802,9 @@ $LANG_configselects['Core'] = array(
     40 => array('False' => 0, 'Users and Anonymous' => 1, 'Users Only' => 2),
     41 => array('False' => 0, 'Likes and Dislikes' => 1, 'Likes Only' => 2),
     42 => array('None' => 0, 'Use individual Article Settings' => 1),
-    43 => array('All' => 'all', 'Homepage Only' => 'homeonly', 'Select Topics' => 'selectedtopics'),
+    43 => array('Toutes' => 'all', 'Page d\'accueil uniquement' => 'homeonly', 'Sélectionner les catégories' => 'selected'),
     44 => array('No access' => 0, 'Read-Only' => 2),
-    46 => array('Likes and Dislikes' => 3, 'Likes Only' => 1, 'Dislikes Only' => 2)
+    46 => array('J’aime et Je n’aime pas' => 0, 'J’aime uniquement' => 1, 'Je n’aime pas uniquement' => 2)
 );
 
 ###############################################################################
