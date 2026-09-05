@@ -1,0 +1,33 @@
+name: Import upstream Geeklog 2.2.2 French reference
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/import-upstream-french-222.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Geeklog 2.2.2 archive
+        run: |
+          curl -L --fail --retry 3 -o /tmp/geeklog-2.2.2.tar.gz https://fossies.org/linux/www/geeklog-2.2.2.tar.gz
+          mkdir -p /tmp/geeklog222
+          tar -xzf /tmp/geeklog-2.2.2.tar.gz -C /tmp/geeklog222
+          FILE=$(find /tmp/geeklog222 -path '*/language/french_france_utf-8.php' | head -n1)
+          test -n "$FILE"
+          cp "$FILE" core/2.2.2/french_france_upstream_utf-8.php
+      - name: Commit upstream reference
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add core/2.2.2/french_france_upstream_utf-8.php
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add upstream Geeklog 2.2.2 French reference'
+            git push
+          fi
