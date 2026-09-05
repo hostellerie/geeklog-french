@@ -135,6 +135,13 @@ jobs:
               return $m[0];
           }
 
+          function normalizedValues($array)
+          {
+              $values = array_values($array);
+              sort($values);
+              return $values;
+          }
+
           $errors = array();
 
           function compareValue($en, $fr, $path, &$errors)
@@ -172,8 +179,35 @@ jobs:
                   $errors[] = "Missing French variable \$$name";
                   continue;
               }
+
+              if ($name === 'LANG_configselects') {
+                  foreach ($value as $section => $selects) {
+                      if (!isset($fr[$name][$section])) {
+                          $errors[] = "Missing French configselect section $section";
+                          continue;
+                      }
+                      foreach ($selects as $index => $options) {
+                          if (!array_key_exists($index, $fr[$name][$section])) {
+                              $errors[] = "Missing French configselect index $section/$index";
+                              continue;
+                          }
+                          $frOptions = $fr[$name][$section][$index];
+                          if (normalizedValues($options) !== normalizedValues($frOptions)) {
+                              $errors[] = "Configselect technical values differ at $section/$index";
+                          }
+                      }
+                      foreach ($fr[$name][$section] as $index => $options) {
+                          if (!array_key_exists($index, $selects)) {
+                              $errors[] = "Extra French configselect index $section/$index";
+                          }
+                      }
+                  }
+                  continue;
+              }
+
               compareValue($value, $fr[$name], '$' . $name, $errors);
           }
+
           foreach ($fr as $name => $value) {
               if (!array_key_exists($name, $en)) {
                   $errors[] = "Extra French variable \$$name";
@@ -184,7 +218,7 @@ jobs:
               fwrite(STDERR, implode(PHP_EOL, $errors) . PHP_EOL);
               exit(1);
           }
-          echo "French structure and printf-style placeholders match the English source.\n";
+          echo "French structure, technical select values and printf-style placeholders match the English source.\n";
           PHP
 
       - name: Commit automatic apostrophe repairs
