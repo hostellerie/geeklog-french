@@ -41,7 +41,8 @@ jobs:
                   'site_name'=>'Example', 'commentspeedlimit'=>45, 'speedlimit'=>45,
                   'backup_path'=>'/tmp/backups/', 'path_html'=>'/tmp/', 'path_system'=>'/tmp/',
                   'path_images'=>'/tmp/', 'invalidloginattempts'=>5, 'invalidloginmaxtime'=>1200,
-                  'theme_site_default'=>'modern_curve', 'theme'=>'modern_curve', 'min_theme_gl_version'=>'2.2.2'
+                  'theme_site_default'=>'modern_curve', 'theme'=>'modern_curve',
+                  'min_theme_gl_version'=>'2.2.2', 'theme_gl_version'=>'2.2.2'
               );
               $_DB_mysqldump_path='/usr/bin/mysqldump'; $_DB_dbms='mysqli';
               include $file;
