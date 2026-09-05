@@ -1,0 +1,105 @@
+name: Validate Geeklog 2.1.1 French translation
+
+on:
+  push:
+    paths:
+      - 'core/2.1.1/french_france_utf-8.php'
+      - '.github/workflows/lint-french-211.yml'
+  pull_request:
+    paths:
+      - 'core/2.1.1/french_france_utf-8.php'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repair unescaped French apostrophes in single-quoted PHP strings
+        if: github.event_name == 'push'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('core/2.1.1/french_france_utf-8.php')
+          text = path.read_text(encoding='utf-8')
+          out = []
+          state = 'normal'
+          i = 0
+
+          def is_letter(ch):
+              return bool(ch) and ch.isalpha()
+
+          while i < len(text):
+              c = text[i]
+              n = text[i + 1] if i + 1 < len(text) else ''
+              p = text[i - 1] if i > 0 else ''
+
+              if state == 'normal':
+                  if c == "'":
+                      state = 'single'
+                  elif c == '"':
+                      state = 'double'
+                  elif c == '/' and n == '/':
+                      state = 'line_comment'
+                  elif c == '#':
+                      state = 'line_comment'
+                  elif c == '/' and n == '*':
+                      state = 'block_comment'
+                  out.append(c)
+              elif state == 'single':
+                  if c == '\\':
+                      out.append(c)
+                      if i + 1 < len(text):
+                          i += 1
+                          out.append(text[i])
+                  elif c == "'":
+                      if is_letter(p) and is_letter(n):
+                          out.append("\\'")
+                      else:
+                          out.append(c)
+                          state = 'normal'
+                  else:
+                      out.append(c)
+              elif state == 'double':
+                  out.append(c)
+                  if c == '\\' and i + 1 < len(text):
+                      i += 1
+                      out.append(text[i])
+                  elif c == '"':
+                      state = 'normal'
+              elif state == 'line_comment':
+                  out.append(c)
+                  if c == '\n':
+                      state = 'normal'
+              elif state == 'block_comment':
+                  out.append(c)
+                  if c == '*' and n == '/':
+                      i += 1
+                      out.append('/')
+                      state = 'normal'
+              i += 1
+
+          fixed = ''.join(out)
+          if fixed != text:
+              path.write_text(fixed, encoding='utf-8')
+          PY
+
+      - name: Lint PHP language file
+        run: php -l core/2.1.1/french_france_utf-8.php
+
+      - name: Commit automatic apostrophe repairs
+        if: github.event_name == 'push'
+        run: |
+          if ! git diff --quiet -- core/2.1.1/french_france_utf-8.php; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add core/2.1.1/french_france_utf-8.php
+            git commit -m 'Fix PHP escaping in French translation'
+            git push
+          fi
