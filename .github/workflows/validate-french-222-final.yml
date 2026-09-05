@@ -1,5 +1,6 @@
 name: Final validation Geeklog 2.2.2 French translation
 
+# Revalidate after the 2.2.2 translation pass.
 on:
   push:
     paths:
