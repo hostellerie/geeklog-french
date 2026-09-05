@@ -1,0 +1,52 @@
+name: Revalidate completed Geeklog 2.2.2 French translation
+
+on:
+  push:
+    paths: ['.github/workflows/revalidate-french-222.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run canonical 2.2.2 validation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('.github/workflows/validate-french-222-final.yml').read_text(encoding='utf-8').splitlines()
+          collecting=False
+          php=[]
+          for line in src:
+              if line.strip()=="cat > /tmp/validate.php <<'PHP'":
+                  collecting=True
+                  continue
+              if collecting and line.strip()=='PHP':
+                  break
+              if collecting:
+                  php.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/validate.php').write_text('\n'.join(php)+'\n',encoding='utf-8')
+          PY
+          php -l core/2.2.2/english_utf-8.php
+          php -l core/2.2.2/french_france_utf-8.php
+          php /tmp/validate.php
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('core/2.2.2/french_france_utf-8.php').read_text(encoding='utf-8').lower()
+          bad={'prévisualiser':'Aperçu','courriel':'email','e-mail':'email','télévers':'envoi/envoyer','rubrique':'catégorie'}
+          found=[f'{k} → {v}' for k,v in bad.items() if k in text]
+          if found: raise SystemExit('Terminology inconsistencies:\n'+'\n'.join(found))
+          print('Terminology audit passed.')
+          PY
+      - name: Commit final candidate report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add core/2.2.2/UNTRANSLATED-CANDIDATES.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh Geeklog 2.2.2 French translation audit'
+            git push
+          fi
