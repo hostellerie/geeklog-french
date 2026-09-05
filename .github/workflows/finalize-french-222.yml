@@ -1,0 +1,81 @@
+name: Finalize Geeklog 2.2.2 French strings
+
+on:
+  push:
+    paths: ['.github/workflows/finalize-french-222.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix final untranslated strings
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('core/2.2.2/french_france_utf-8.php')
+          s=p.read_text(encoding='utf-8')
+
+          # Dynamic email verification message.
+          s=re.sub(
+              r"(?m)^(\s*)'email_verify_msg'\s*=>\s*.*?,\s*$",
+              r'''\1'email_verify_msg' => "Vous avez modifié l’adresse email de votre compte, mais elle doit encore être vérifiée. Consultez l’email envoyé par {$_CONF['site_name']} contenant le lien de vérification. Après avoir cliqué sur ce lien, la nouvelle adresse sera validée et votre compte sera mis à jour.<br /><br />Vous pouvez également modifier l’adresse à vérifier avec les champs ci-dessus ou la supprimer.",''',
+              s,
+              count=1
+          )
+
+          # Remaining Likes labels containing HTML.
+          keyed={
+              'num_anon_users': "'<br />%s utilisateurs anonymes'",
+              'one_anon_users': "'<br />1 utilisateur anonyme'",
+              'num_more_users': "'<br />+%s utilisateurs supplémentaires'",
+          }
+          for key,val in keyed.items():
+              s=re.sub(rf"(?m)^(\s*)'{key}'\s*=>\s*.*?,\s*$", rf"\1'{key}' => {val},", s, count=1)
+
+          # Account verification result message.
+          old='A verification message has been sent to your email address. Please click on the link in the email to confirm your email address and update your account. If you log into your account again before you verify your email address you will be asked again for a email address.<br /><br />Please note you have now been successfully logged out so you can complete this verification.'
+          new='Un message de vérification a été envoyé à votre adresse email. Cliquez sur le lien contenu dans cet email pour confirmer votre adresse et mettre à jour votre compte. Si vous vous reconnectez avant d’avoir vérifié votre adresse, une adresse email vous sera à nouveau demandée.<br /><br />Vous avez été déconnecté afin de pouvoir terminer cette vérification.'
+          s=s.replace(old,new)
+
+          # Visible permission labels around technical autotags.
+          for old,new in {
+              '[article: ] Permissions':'Permissions de [article: ]',
+              '[user: ] Permissions':'Permissions de [user: ]',
+              '[topic: ] Permissions':'Permissions de [topic: ]',
+              '[related_topics: ] Permissions':'Permissions de [related_topics: ]',
+              '[related_items: ] Permissions':'Permissions de [related_items: ]',
+              '[block: ] Permissions':'Permissions de [block: ]',
+              '[structureddata: ] Permissions':'Permissions de [structureddata: ]',
+              '[likes_block: ] Permissions':'Permissions de [likes_block: ]',
+              'Filemanager':'Gestionnaire de fichiers',
+              'Cache Time':'Durée du cache',
+          }.items():
+              s=s.replace("'"+old+"'", "'"+new+"'")
+
+          # French month abbreviation, scoped to the short-month array.
+          marker='$LANG_MONTH_SHORT = array('
+          if marker in s:
+              a=s.index(marker)
+              b=s.index('\n);',a)
+              block=s[a:b]
+              block=re.sub(r"(?m)^\s*12\s*=>\s*'Decr'", "    12 => 'Déc'", block)
+              s=s[:a]+block+s[b:]
+
+          p.write_text(s,encoding='utf-8')
+          PY
+          php -l core/2.2.2/french_france_utf-8.php
+      - name: Commit final strings
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add core/2.2.2/french_france_utf-8.php
+          if ! git diff --cached --quiet; then
+            git commit -m 'Finalize Geeklog 2.2.2 French language file'
+            git push
+          fi
