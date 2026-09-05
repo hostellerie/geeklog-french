@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Repair unescaped French apostrophes in single-quoted PHP strings
+      - name: Normalize French translation syntax and terminology
         if: github.event_name == 'push'
         run: |
           python3 - <<'PY'
@@ -30,6 +30,14 @@ jobs:
 
           path = Path('core/2.1.1/french_france_utf-8.php')
           text = path.read_text(encoding='utf-8')
+
+          replacements = {
+              "Prévisualiser les modifications de la soumission": "Aperçu des modifications de la soumission",
+              "Prévisualiser les modifications": "Aperçu des modifications",
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+
           out = []
           state = 'normal'
           i = 0
@@ -88,7 +96,7 @@ jobs:
               i += 1
 
           fixed = ''.join(out)
-          if fixed != text:
+          if fixed != path.read_text(encoding='utf-8'):
               path.write_text(fixed, encoding='utf-8')
           PY
 
@@ -96,6 +104,28 @@ jobs:
         run: |
           php -l core/2.1.1/english_utf-8.php
           php -l core/2.1.1/french_france_utf-8.php
+
+      - name: Audit French terminology
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          text = Path('core/2.1.1/french_france_utf-8.php').read_text(encoding='utf-8').lower()
+          forbidden = {
+              'prévisualiser': 'use « Aperçu » for Preview',
+              'courriel': 'use « email »',
+              'e-mail': 'use « email »',
+              'télévers': 'use « envoi » / « envoyer »',
+              'rubrique': 'use « catégorie » for Geeklog Topic',
+          }
+          errors = []
+          for term, rule in forbidden.items():
+              if term in text:
+                  errors.append(f'{term}: {rule}')
+          if errors:
+              raise SystemExit('Terminology inconsistencies:\n' + '\n'.join(errors))
+          print('French terminology audit passed.')
+          PY
 
       - name: Compare arrays, keys and placeholders with English source
         run: |
@@ -221,13 +251,13 @@ jobs:
           echo "French structure, technical select values and printf-style placeholders match the English source.\n";
           PHP
 
-      - name: Commit automatic apostrophe repairs
+      - name: Commit automatic normalization repairs
         if: github.event_name == 'push'
         run: |
           if ! git diff --quiet -- core/2.1.1/french_france_utf-8.php; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add core/2.1.1/french_france_utf-8.php
-            git commit -m 'Fix PHP escaping in French translation'
+            git commit -m 'Normalize French translation terminology'
             git push
           fi
