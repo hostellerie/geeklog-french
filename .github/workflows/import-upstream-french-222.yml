@@ -20,8 +20,7 @@ jobs:
           rm -rf /tmp/geeklog222
           mkdir -p /tmp/geeklog222
           tar -xzf /tmp/geeklog-2.2.2.tar.gz -C /tmp/geeklog222
-          ROOT=$(find /tmp/geeklog222 -mindepth 1 -maxdepth 1 -type d | head -n1)
-          FILE="$ROOT/language/french_france_utf-8.php"
+          FILE="/tmp/geeklog222/language/french_france_utf-8.php"
           test -f "$FILE"
           cp "$FILE" core/2.2.2/french_france_upstream_utf-8.php
       - name: Commit upstream reference
